@@ -376,6 +376,22 @@ real_time_data = html.Div(
     children=[
         navbar,
         real_time_title,
+        html.Div(
+            children=[
+                html.Div(
+                    children="Add an Event",
+                    className="menu-title"
+                ),
+                dcc.DatePickerSingle(
+                    id="calendar-date-picker-rt",
+                    min_date_allowed=subway_data.Date.min().date(),
+                    max_date_allowed=subway_data.Date.max().date(),
+                    initial_visible_month=subway_data.Date.min().date(),
+                    date=date(2020, 3, 3)
+                ),
+            ],
+            className="menu",
+        ),
 
     ]
 )

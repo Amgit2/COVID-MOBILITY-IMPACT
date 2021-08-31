@@ -11,7 +11,16 @@ import plotly.graph_objects as go
 import datetime
 from datetime import  date
 
+external_stylesheets = [
+    {
+        "href": "https://fonts.googleapis.com/css2?"
+                "family=Lato:wght@400;700&display=swap",
+        "rel": "stylesheet",
+    }, dbc.themes.BOOTSTRAP
+]
 
+app = dash.Dash(__name__, external_stylesheets= external_stylesheets, suppress_callback_exceptions=True)
+server = app.server
 
 def appLayout(app):
     navbar = dbc.NavbarSimple(
@@ -508,14 +517,6 @@ if __name__ == '__main__':
 
     covid_data.to_csv('test.csv')
 
-    external_stylesheets = [
-        {
-            "href": "https://fonts.googleapis.com/css2?"
-                    "family=Lato:wght@400;700&display=swap",
-            "rel": "stylesheet",
-        }, dbc.themes.BOOTSTRAP
-    ]
-
     ev_covid_fig = go.Figure( data = go.Scatter(x = covid_data["Date"], y = covid_data["MA Cases"], mode= "lines", name= "Moving Average of COVID-19 Cases in New York City"))
     ev_covid_fig.add_trace(go.Scatter(x = covid_data["Date"], y = covid_data["7 days Ahead Forecasted Values"], mode="lines", name= "LSTM 7 Prediction"))
 
@@ -532,9 +533,9 @@ if __name__ == '__main__':
 
     ev_subway_fig.update_layout(
         {'plot_bgcolor': 'rgba(0, 0, 0, 0)', 'paper_bgcolor': 'rgba(0, 0, 0, 0)', })
-    app = dash.Dash(__name__, external_stylesheets= external_stylesheets, suppress_callback_exceptions=True)
+
     appLayout(app)
-    server = app.server
+
     app.run_server(debug=True)
 
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/

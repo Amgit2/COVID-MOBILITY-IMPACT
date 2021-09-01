@@ -107,8 +107,10 @@ app.layout = html.Div(
 
 navbar = dbc.NavbarSimple(
     children=[
-        dbc.NavItem(dbc.NavLink("By Events", href="Events")),
-        dbc.NavItem(dbc.NavLink("By Change Points", href="ChangePoints")),
+        dbc.NavItem(dbc.NavLink('Home', href="/")),
+        dbc.NavItem(dbc.NavLink("By Events", href="/events")),
+        dbc.NavItem(dbc.NavLink("By Change Points", href="/changepoints")),
+        dbc.NavItem(dbc.NavLink("Real-time Data", href="/real-time-data"))
     ],
     brand="",
     brand_href="#",
@@ -543,7 +545,7 @@ def update_covid(no_cp):
     cps = algo.predict(no_cp)
     dates = covid_data["Date"].loc[covid_data.index.isin(cps)]
     covid_chart_figure = px.line(
-        covid_data, x="Date", y = ["MA Cases", "7 days Ahead Forecasted Values"],
+        covid_data, x="Date", y= ["MA Cases", "7 days Ahead Forecasted Values"],
     )
     for date in dates:
         covid_chart_figure.add_vline(x = date, line_width = 1, line_color = "green")

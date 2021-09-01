@@ -54,7 +54,7 @@ covid_data["Event Description"].fillna(method="ffill", inplace=True)
 subway_data = subway_data.merge(event_data, left_on="Date", right_on="Date", how="left")
 subway_data["Event Description"].fillna(method="ffill", inplace=True)
 
-covid_data.to_csv('test.csv')
+#covid_data.to_csv('test.csv')
 
 ev_covid_fig = go.Figure(data=go.Scatter(x=covid_data["Date"], y=covid_data["MA Cases"], mode="lines",
                                          name="Moving Average of COVID-19 Cases in New York City"))
@@ -76,6 +76,19 @@ ev_subway_fig.update_layout(
 
 ev_subway_fig.update_layout(
     {'plot_bgcolor': 'rgba(0, 0, 0, 0)', 'paper_bgcolor': 'rgba(0, 0, 0, 0)', })
+
+rt_covid_df = pd.read_csv('rt_covid.csv')
+
+rt_subway_df = pd.read_csv('rt_subway.csv')
+
+rt_covid_fig = go.Figure(data=go.Scatter(x=rt_covid_df["date_of_interest"], y=rt_covid_df["MA Cases"], mode="lines",
+                                         name="Moving Average of COVID-19 Cases in New York City"))
+rt_covid_fig.add_trace((go.Scatter(x= rt_covid_df["date_of_interest"], y= rt_covid_df["CASE_COUNT"], mode="lines", name="COVID-19 Cases in New York City")))
+
+rt_subway_fig = go.Figure(data=go.Scatter(x=rt_subway_df["Date"], y=rt_subway_df["MA Entries"], mode="lines",
+                                         name="Moving Average of COVID-19 Cases in New York City"))
+rt_subway_fig.add_trace(go.Scatter(x=rt_subway_df["Date"], y=rt_subway_df["Subways: Total Estimated Ridership"], mode="lines",
+                                   name="Subway Usage Numbers in New York City"))
 
 app = dash.Dash(__name__, external_stylesheets= external_stylesheets, suppress_callback_exceptions=True)
 server = app.server
@@ -237,7 +250,23 @@ event_graphs = html.Div(
             ],
             className="card",
         )
+rt_graphs = html.Div(
+    children=[
+        html.Div("COVID-19 Cases in NYC"),
+        dcc.Graph(
+            id="rt-covid-chart",
+            figure=rt_covid_fig,
+            config={"displayModeBar": False}
+        ),
+        html.Div("Subway Usage in NYC"),
+        dcc.Graph(
+            id="rt-subway-chart",
+            figure=rt_subway_fig,
+            config={"displayModeBar": False}
+        ),
+    ]
 
+)
 
 upload=html.Div(
         children=[
@@ -392,7 +421,7 @@ real_time_data = html.Div(
             ],
             className="menu",
         ),
-
+        rt_graphs
     ]
 )
 

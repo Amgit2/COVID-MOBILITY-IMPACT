@@ -689,15 +689,25 @@ teams = html.Div(children=[
                  html.Img(src="https://media-exp1.licdn.com/dms/image/C5603AQGuQkOG3uCLZg/profile-displayphoto-shrink_200_200/0/1625175763328?e=1638403200&v=beta&t=Sf7srb1MB1fJb-TsVnxYzIsFZPgCqa6EHV5DSBLfXCY", alt= "avatar", className="circle-img"),
                  html.Div(className="container2",
                           children=[
-                              html.Button(className="social-btn",
+                              dcc.Link(
+                              html.Button(className="social-btn hvr-radial-in",
                                   children=html.I(className="fab fa-linkedin-in"),
+                              ),href="https://www.linkedin.com/in/the-amit-hiremath/", target="_blank"),
+                              dcc.Link(
+                                  html.Button(className="social-btn hvr-radial-in",
+                                              children=[html.I(className="far fa-envelope", )]
+                                              ),
+                                  href="mailto:avmh200611@gmail.com",
+                                  target="_blank"
                               ),
-                              html.Button( className="social-btn",
-                                  children=[html.I(className="far fa-envelope", **{'aria-hidden': 'true'}, children=None),]
+                              dcc.Link(
+                                  html.Button(className="social-btn hvr-radial-in",
+                                              children=[html.I(className="fas fa-globe-americas"), ]
+                                              ),
+                                  href="https://amits-portfolio-site.herokuapp.com/introduction",
+                                  target="_blank"
                               ),
-                              html.Button(className="social-btn",
-                                  children=[html.I(className="fas fa-globe-americas", **{'aria-hidden': 'true'}, children=None),]
-                              ),
+
                           ])
              ]),
     html.Div(className="team-card",
@@ -707,15 +717,32 @@ teams = html.Div(children=[
                  html.Img(src="https://www.nyit.edu/files/profiles/headshot/Ziqian.Dong.jpg", alt= "avatar", className="circle-img"),
                  html.Div(className="container2",
                           children=[
-                              html.Button(className="social-btn",
-                                  children=html.I(className="fab fa-linkedin-in"),
+                              dcc.Link(
+                                  html.Button(className="social-btn hvr-radial-in",
+                                              children=html.I(className="fab fa-linkedin-in"),
+                                              ),
+                                href="https://www.linkedin.com/in/ziqian-cecilia-dong-abb4532/",
+                                target="_blank"
                               ),
-                              html.Button( className="social-btn",
-                                  children=[html.I(className="far fa-envelope", **{'aria-hidden': 'true'}, children=None),]
+                              dcc.Link(
+                                  html.Button(className="social-btn hvr-radial-in",
+                                              children=[html.I(className="far fa-envelope", **{'aria-hidden': 'true'},
+                                                               children=None), ]
+                                              ),
+                                  href="mailto:ziqian.dong@nyit.edu",
+                                  target="_blank"
                               ),
-                              html.Button(className="social-btn",
-                                  children=[html.I(className="fas fa-globe-americas", **{'aria-hidden': 'true'}, children=None),]
+
+                              dcc.Link(
+                                  html.Button(className="social-btn hvr-radial-in",
+                                              children=[
+                                                  html.I(className="fas fa-globe-americas", **{'aria-hidden': 'true'},
+                                                         children=None), ]
+                                              ),
+                                  href="https://www.nyit.edu/bio/Ziqian.Dong",
+                                  target="_blank"
                               ),
+
                           ])
              ]),
     html.Div(className="team-card",
@@ -725,15 +752,30 @@ teams = html.Div(children=[
                  html.Img(src="https://web.njit.edu/~rojasces/roberto_pic.jpg", alt= "avatar", className="circle-img"),
                  html.Div(className="container2",
                           children=[
-                              html.Button(className="social-btn",
-                                  children=html.I(className="fab fa-linkedin-in"),
+                              dcc.Link(
+                                  html.Button(className="social-btn hvr-radial-in",
+                                              children=html.I(className="fab fa-linkedin-in text-red"),
+                                              ),
+                                  href="https://www.linkedin.com/in/roberto-rojas-cessa-90168910/",
+                                  target="_blank"
                               ),
-                              html.Button( className="social-btn",
-                                  children=[html.I(className="far fa-envelope"),]
+
+                              dcc.Link(
+                                  html.Button(className="social-btn hvr-radial-in",
+                                              children=[html.I(className="far fa-envelope"), ]
+                                              ),
+                                  href="mailto:roberto.rojas-cessa@njit.edu",
+                                  target="_blank"
                               ),
-                              html.Button(className="social-btn",
-                                  children=[html.I(className="fas fa-globe-americas"),]
+
+                              dcc.Link(
+                                  html.Button(className="social-btn hvr-radial-in",
+                                              children=[html.I(className="fas fa-globe-americas"), ]
+                                              ),
+                                  href="https://web.njit.edu/~rojasces/",
+                                  target="_blank"
                               ),
+
                           ])
              ]),
 

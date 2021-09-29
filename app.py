@@ -12,13 +12,18 @@ import datetime
 from datetime import  date
 import uuid
 import random
-
+FA = "https://use.fontawesome.com/releases/v5.12.1/css/all.css"
 external_stylesheets = [
     {
         "href": "https://fonts.googleapis.com/css2?"
                 "family=Lato:wght@400;700&display=swap",
         "rel": "stylesheet",
-    }, dbc.themes.BOOTSTRAP
+    }, dbc.themes.BOOTSTRAP,
+    {
+        "href": "https://use.fontawesome.com/releases/v5.12.1/css/all.css?",
+        "rel": "stylesheet",
+    },
+
 ]
 # import data 
 covid_data = pd.read_csv('covid_preds.csv')
@@ -117,7 +122,8 @@ rt_subway_fig.update_layout(
     {'plot_bgcolor': 'rgba(0, 0, 0, 0)', 'paper_bgcolor': 'rgba(0, 0, 0, 0)', }
 )
 
-app = dash.Dash(__name__, external_stylesheets= external_stylesheets, suppress_callback_exceptions=True)
+
+app = dash.Dash(__name__, external_stylesheets=external_stylesheets, suppress_callback_exceptions=True)
 server = app.server
 
 
@@ -362,7 +368,11 @@ real_time_title = html.Div(
 event_graphs = html.Div(
             children=[
                     html.Div("Event Impact Tool", className="subheading2"),
-                    dbc.Button("Calculate Top 10 Most Impactful Events", id="calculate-btn", n_clicks=0, className="btn"),
+                    html.Div(className="container2",
+                             children=[
+                                 dbc.Button("Calculate Top 10 Most Impactful Events", id="calculate-btn", n_clicks=0, className="btn"),
+                                 dbc.Button("Clear", id="clear-btn", n_clicks=0, className="btn")],),
+
                     dbc.Spinner(children=[html.Div("COVID-19 Cases in NYC", className="subheading2"),
                                           dcc.Graph(
                         id="events-covid-chart",
@@ -471,13 +481,13 @@ rt_graphs = html.Div(
     ]
 
 )
-team = html.Div(
-        children=[
-            html.H1("Team", className="subheading"),
-            html.P("Amit Hiremath, Ziqian Dong & Roberto Rojas-Cessa", className="descr"),
-        ],
-        className="card",
-    )
+#team = html.Div(
+#        children=[
+##            html.H1("Team", className="subheading"),
+##           html.P("Amit Hiremath, Ziqian Dong & Roberto Rojas-Cessa", className="descr"),
+#        ],
+#        className="card",
+#    )
 
 
 upload=html.Div(
@@ -518,7 +528,6 @@ index_page = html.Div(
         #    ],
         #    className='menu3'
         #),
-        team
     ]
     ,
 )
@@ -668,39 +677,67 @@ real_time_data = html.Div(
     ]
 )
 
+
 teams = html.Div(children=[
     navbar,
     team_title,
-    html.Div(className="card",
+    html.Div(className="container2",
+             children=[html.Div(className="team-card",
              children=[
                  html.Div("Amit Hiremath", className="subheading"),
-                 html.P("Research Assistant at NYIT",className="descr")
-
+                 html.P("Research Assistant at NYIT",className="content"),
+                 html.Img(src="https://media-exp1.licdn.com/dms/image/C5603AQGuQkOG3uCLZg/profile-displayphoto-shrink_200_200/0/1625175763328?e=1638403200&v=beta&t=Sf7srb1MB1fJb-TsVnxYzIsFZPgCqa6EHV5DSBLfXCY", alt= "avatar", className="circle-img"),
+                 html.Div(className="container2",
+                          children=[
+                              html.Button(className="social-btn",
+                                  children=html.I(className="fab fa-linkedin-in"),
+                              ),
+                              html.Button( className="social-btn",
+                                  children=[html.I(className="far fa-envelope", **{'aria-hidden': 'true'}, children=None),]
+                              ),
+                              html.Button(className="social-btn",
+                                  children=[html.I(className="fas fa-globe-americas", **{'aria-hidden': 'true'}, children=None),]
+                              ),
+                          ])
              ]),
-    html.Div(className="card",
+    html.Div(className="team-card",
              children=[
-                 html.Div("Dr. Ziqian Dong", className="subheading"),
-                 html.P("Professor at NYIT", className="descr")
-
+                 html.Div("Ziqian Dong", className="subheading"),
+                 html.P("Professor at NYIT", className="content"),
+                 html.Img(src="https://www.nyit.edu/files/profiles/headshot/Ziqian.Dong.jpg", alt= "avatar", className="circle-img"),
+                 html.Div(className="container2",
+                          children=[
+                              html.Button(className="social-btn",
+                                  children=html.I(className="fab fa-linkedin-in"),
+                              ),
+                              html.Button( className="social-btn",
+                                  children=[html.I(className="far fa-envelope", **{'aria-hidden': 'true'}, children=None),]
+                              ),
+                              html.Button(className="social-btn",
+                                  children=[html.I(className="fas fa-globe-americas", **{'aria-hidden': 'true'}, children=None),]
+                              ),
+                          ])
              ]),
-    html.Div(className="card",
+    html.Div(className="team-card",
              children=[
-                 html.Div("Dr. Roberto Cessa-Rojas", className="subheading"),
-                 html.P("Professor at NJIT", className="descr")
-
+                 html.Div("Roberto Cessa-Rojas", className="subheading"),
+                 html.P("Professor at NJIT", className="content"),
+                 html.Img(src="https://web.njit.edu/~rojasces/roberto_pic.jpg", alt= "avatar", className="circle-img"),
+                 html.Div(className="container2",
+                          children=[
+                              html.Button(className="social-btn",
+                                  children=html.I(className="fab fa-linkedin-in"),
+                              ),
+                              html.Button( className="social-btn",
+                                  children=[html.I(className="far fa-envelope"),]
+                              ),
+                              html.Button(className="social-btn",
+                                  children=[html.I(className="fas fa-globe-americas"),]
+                              ),
+                          ])
              ]),
-    '''html.Figure(className="image-block",
-                children=[
-                    html.H1("Testing 123", className=""),
-                    html.Img(src="https://images.pexels.com/photos/1680140/pexels-photo-1680140.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=750&w=1260", alt=""),
-                    html.Figcaption(className="figcaption",
-                    children=[
-                        html.H3(),
-                        html.P("rand thing in here"),
-                        html.Button("more info")
 
-                    ])
-                ])'''
+    ]),
     ]
 )
 

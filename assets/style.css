@@ -218,6 +218,8 @@ body {
   flex-wrap: wrap;
   max-width: 1200px;
   margin-top: 50px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .container2 .card {
@@ -234,6 +236,23 @@ body {
   margin-bottom: 50px;
   transition: 0.5s;
 }
+.container2 .team-card {
+  background: #079A82;
+  position: relative;
+  text-align: center;
+  width: 350px;
+  height: 450px;
+  box-shadow: inset 5px 5px 5px rgba(0, 0, 0, 0.2),
+    inset -5px -5px 15px rgba(255, 255, 255, 0.1),
+    5px 5px 15px rgba(0, 0, 0, 0.3), -5px -5px 15px rgba(255, 255, 255, 0.1);
+  border-radius: 15px;
+  margin-top: 50px;
+  margin-right: 20px;
+  margin-left:20px;
+  margin-bottom: 50px;
+  transition: 0.5s;
+}
+
 
 .container2 .card:nth-child(1) .box .content a {
   background: #2196f3;
@@ -410,4 +429,24 @@ body {
   to {
     opacity: 0.5;
   }
+}
+
+.circle-img{
+    position: relative;
+    margin-left: 50px;
+    margin-right: 50px;
+    border-radius: 50%;
+    border: 5px solid #FFFFFF;
+    width: 250px;
+    height: 250px;
+}
+
+.social-btn{
+
+    border-radius: 50%;
+    border: 1px solid #FFFFFF;
+    width: 50px;
+    height: 50px;
+    margin-left: 20px;
+    margin-right: 20px;
 }

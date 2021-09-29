@@ -10,6 +10,8 @@ import plotly.express as px
 import plotly.graph_objects as go
 import datetime
 from datetime import  date
+import uuid
+import random
 
 external_stylesheets = [
     {
@@ -18,7 +20,7 @@ external_stylesheets = [
         "rel": "stylesheet",
     }, dbc.themes.BOOTSTRAP
 ]
-# import data
+# import data 
 covid_data = pd.read_csv('covid_preds.csv')
 subway_data = pd.read_csv('subway_preds.csv')
 
@@ -38,12 +40,14 @@ ds = jhu_df["Date"]
 nds = []
 for d in ds:
     d = d.replace(',', '')
-    d = datetime.datetime.strptime(d, '%b %d %Y').strftime('%d/%m/%Y')
+    d = datetime.datetime.strptime(d, '%b %d %Y').strftime('%Y-%m-%d')
     nds.append(d)
 jhu_df["Date"] = nds
 jhu_df = jhu_df[["Date", "Event Description"]]
 jhu_df["Date"] = pd.to_datetime(jhu_df["Date"])
 jhu_df = jhu_df.loc[jhu_df["Date"] < "2021-03-01"]
+#print(nds)
+#print(jhu_df.loc[(jhu_df["Date"] =="2020-09-03")].sort_values(by="Date"))
 
 # condense all events on the same day to 1 cell
 event_data = jhu_df.groupby('Date')["Event Description"].apply('----> \n'.join).reset_index()
@@ -54,25 +58,35 @@ covid_data["Event Description"].fillna(method="ffill", inplace=True)
 subway_data = subway_data.merge(event_data, left_on="Date", right_on="Date", how="left")
 subway_data["Event Description"].fillna(method="ffill", inplace=True)
 
-#covid_data.to_csv('test.csv')
 
 ev_covid_fig = go.Figure(data=go.Scatter(x=covid_data["Date"], y=covid_data["MA Cases"], mode="lines",
-                                         name="Moving Average of COVID-19 Cases in New York City"))
+                                         name="Moving Average of COVID-19 Cases"))
 ev_covid_fig.add_trace(go.Scatter(x=covid_data["Date"], y=covid_data["7 days Ahead Forecasted Values"], mode="lines",
                                   name="LSTM 7 Prediction"))
 
 ev_covid_fig.update_layout(
-    xaxis_tickformat='%B <br>%Y'
+    xaxis_tickformat='%B <br>%Y',
+legend = dict(
+    yanchor="top",
+    y=0.99,
+    xanchor="right",
+    x=0.69
+)
 )
 ev_covid_fig.update_layout(
     {'plot_bgcolor': 'rgba(0, 0, 0, 0)', 'paper_bgcolor': 'rgba(0, 0, 0, 0)', })
 ev_subway_fig = go.Figure(data=go.Scatter(x=subway_data["Date"], y=subway_data["MA Entries"], mode="lines",
-                                          name="Moving Average of Subway Entries in New York City"))
+                                          name="Moving Average of Subway Entries"))
 ev_subway_fig.add_trace(go.Scatter(x=subway_data["Date"], y=subway_data["7 days Ahead Forecasted Values"], mode="lines",
                                    name="LSTM 7 Prediction"))
 ev_subway_fig.update_layout(
-    xaxis_tickformat='%B <br>%Y'
-)
+    xaxis_tickformat='%B <br>%Y',
+    legend=dict(
+        yanchor="top",
+        y=0.99,
+        xanchor="right",
+        x=0.99
+    ))
 
 ev_subway_fig.update_layout(
     {'plot_bgcolor': 'rgba(0, 0, 0, 0)', 'paper_bgcolor': 'rgba(0, 0, 0, 0)', })
@@ -82,13 +96,26 @@ rt_covid_df = pd.read_csv('rt_covid.csv')
 rt_subway_df = pd.read_csv('rt_subway.csv')
 
 rt_covid_fig = go.Figure(data=go.Scatter(x=rt_covid_df["date_of_interest"], y=rt_covid_df["MA Cases"], mode="lines",
-                                         name="Moving Average of COVID-19 Cases in New York City"))
+                                         name="Moving Average of COVID-19 Cases"))
 rt_covid_fig.add_trace((go.Scatter(x= rt_covid_df["date_of_interest"], y= rt_covid_df["CASE_COUNT"], mode="lines", name="COVID-19 Cases in New York City")))
+#rt_covid_fig.update_xaxes(showgrid=False)
+#rt_covid_fig.update_yaxes(showgrid=False)
+rt_covid_fig.update_layout(template= "plotly_dark")
+
+rt_covid_fig.update_layout(
+    {'plot_bgcolor': 'rgba(0, 0, 0, 0)', 'paper_bgcolor': 'rgba(0, 0, 0, 0)', })
 
 rt_subway_fig = go.Figure(data=go.Scatter(x=rt_subway_df["Date"], y=rt_subway_df["MA Entries"], mode="lines",
-                                         name="Moving Average of COVID-19 Cases in New York City"))
+                                         name="Moving Average of COVID-19 Cases"),)
+#rt_subway_fig.update_xaxes(showgrid=False)
+#rt_subway_fig.update_yaxes(showgrid=False)
+rt_subway_fig.update_layout(template= "plotly_dark")
+
 rt_subway_fig.add_trace(go.Scatter(x=rt_subway_df["Date"], y=rt_subway_df["Subways: Total Estimated Ridership"], mode="lines",
                                    name="Subway Usage Numbers in New York City"))
+rt_subway_fig.update_layout(
+    {'plot_bgcolor': 'rgba(0, 0, 0, 0)', 'paper_bgcolor': 'rgba(0, 0, 0, 0)', }
+)
 
 app = dash.Dash(__name__, external_stylesheets= external_stylesheets, suppress_callback_exceptions=True)
 server = app.server
@@ -104,41 +131,190 @@ app.layout = html.Div(
         ),
     ]
 )
+LOGO = "../../assets/icon.ico"
 
-navbar = dbc.NavbarSimple(
-    children=[
-        dbc.NavItem(dbc.NavLink('Home', href="/")),
-        dbc.NavItem(dbc.NavLink("By Events", href="/events")),
-        dbc.NavItem(dbc.NavLink("By Change Points", href="/changepoints")),
-        dbc.NavItem(dbc.NavLink("Real-time Data", href="/real-time-data"))
+search_bar = dbc.Row(
+    [
+        #dbc.Col(dbc.Input(type="search", placeholder="Search")),
+        dbc.Col(
+            dbc.NavItem(dbc.NavLink('Home', href="/")),
+        ),
     ],
-    brand="",
-    brand_href="#",
-    color="black",
-    dark=True,
+    no_gutters=True,
+    #className="ml-auto flex-nowrap mt-3 mt-md-0",
+    align="center",
 )
 
+# make a reuseable navitem for the different examples
+nav_item = dbc.Nav(
+    [
+        dbc.NavItem(dbc.NavLink("Event Impact", href="/events"), ),
+        dbc.NavItem(dbc.NavLink("Change Point Detection", href="/changepoints"), ),
+        dbc.NavItem(dbc.NavLink("Daily Data", href="/daily-data"), ),
+        dbc.NavItem(dbc.NavLink("Team", href="/team"), )
+    ],
+    horizontal= "end"
+
+
+)
+# make a reuseable dropdown for the different examples
+dropdown = dbc.DropdownMenu(
+    children=[
+        dbc.DropdownMenuItem("Event Impact Tool"),
+        dbc.DropdownMenuItem(divider=True),
+        dbc.DropdownMenuItem("Change Point Detection Tool"),
+        dbc.DropdownMenuItem(divider=True),
+        dbc.DropdownMenuItem("Daily Data"),
+    ],
+    nav=True,
+    in_navbar=True,
+    label="Tools",
+)
+
+
+
+navbar = dbc.Navbar(
+    dbc.Container(
+        [
+            html.A(
+                # Use row and col to control vertical alignment of logo / brand
+                dbc.Row(
+                    [
+                        dbc.Col(html.Img(src=LOGO, height="30px")),
+                        dbc.Col(dbc.NavbarBrand("COVID-19 & Subway Usage Event Impact", className="ms-2")),
+                    ],
+                    align="center",
+                    className="g-0",
+                ),
+                href="/",
+                style={"textDecoration": "none"},
+            ),
+                dbc.Nav(
+                    [nav_item, ],
+                    #className="ms-auto",
+                    navbar=True,
+                    horizontal= "end"
+
+                ),
+
+        ],
+    ),
+    color="black",
+    dark=True,
+    #className="mb-5",
+)
+
+'''dbc.NavbarSimple(
+    children=[
+        #dbc.NavItem(dbc.NavLink('Home', href="/")),
+        dbc.NavItem(dbc.NavLink("Events", href="/events", className="nav-pills")),
+        dbc.NavItem(dbc.NavLink("Change Points", href="/changepoints")),
+        dbc.NavItem(dbc.NavLink("Daily Data", href="/daily-data")),
+        dbc.NavItem(dbc.NavLink("Team", href="/daily-data"))
+    ],
+    brand="Event Impact",
+    brand_href="/",
+    color="black",
+    dark=True,
+    fixed="top"
+)'''
+arrows = html.Div(
+                  children=[
+
+                  ],
+            )
+scroll = html.Div(className="scrolldown",
+           children=html.Div(className="chevrons",
+                  children=[html.Div(className="chevrondown"),
+                            html.Div(className="chervondown")]))
 title = html.Div(
             children=[
-                html.P(children="📊", className="header-emoji"),
+                #html.P(children="📊", className="header-emoji"),
                 html.H1(
                     children="Impact of Public Policies and Events on COVID-19 Cases & Subway Usage in NYC", className="header-title"
                 ),
-                html.P(
-                    children=""
-                             ""
-                             "",
-                    className="header-description",
-                ),
+                scroll
+
+                #html.Div(className="chevron", key="str(random.randint(a, b))"),
+                #html.Div(className="chevron", key="str(random.randint(a, b))"),
             ],
             className="header",
         )
+team_title = html.Div(
+            children=[
+                #html.P(children="📊", className="header-emoji"),
+                html.H1(
+                    children="Team", className="header-title"
+                ),
+                scroll
+
+                #html.Div(className="chevron", key="str(random.randint(a, b))"),
+                #html.Div(className="chevron", key="str(random.randint(a, b))"),
+            ],
+            className="header",
+        )
+tools = html.Div(
+    html.Div(
+        children=[
+        html.Div(
+            html.Div(
+                html.Div(
+                    children=[
+                    html.H2("01"),
+                    html.H3("Event Impact Tool"),
+                    html.P("This tool shows you when the top 10 event impacts happened and how much the impact was. It also allows you to check for an event impact at any given date"),
+                    html.A("Click Here for access", href="/events")
+                ], className="content"),
+                className="box"),
+        className="card"),
+        html.Div(
+            html.Div(
+                html.Div(
+                    children=[
+                        html.H2("02"),
+                        html.H3("Change Point Detection Tool"),
+                        html.P("This tool allows you to play around with the change point detection technique we used. You can use it to see when major change points happened. "),
+                        html.A("Click Here for access", href="/changepoints")
+                    ], className="content"),
+                className="box"),
+            className="card"),
+            html.Div(
+                html.Div(
+                    html.Div(
+                        children=[
+                            html.H2("03"),
+                            html.H3("Daily Data"),
+                            html.P("The Daily data tool is updated everyday at 12 PST and allows users to see what the top 10 impacts were till date"),
+                            html.A("Click Here for access", href="/daily-data")
+                        ], className="content"),
+                    className="box"),
+                className="card"),
+        ],
+    className= "container2"
+    )
+)
+info = html.Div(
+    children=[
+        html.Div(
+        children=[
+            html.H1("Overview", className="subheading"),
+            html.P("We created a framework to measure the impact that events have had on COVID-19 cases and subway usage in New York City using data posted on the CDC and the MTA websites. We use a combination of change point detection and nueral networks to generate the impact. Change point detection tells us when there was a significant change in the data and the Nueral Network was trained to predict what both COVID-19 cases and subway usage numbers would have been like 7 days ahead had nothing changed.", className="descr"),
+        ],
+        className="card"),
+        html.Div(
+        children=[
+            html.H1("Explore Our Work", className="subheading"),
+            tools,
+        ],
+
+        className="card")])
+
 
 event_title = html.Div(
             children=[
-                html.P(children="📊", className="header-emoji"),
+                #html.P(children="📊", className="header-emoji"),
                 html.H1(
-                    children="Ranked By Event", className="header-title"
+                    children="Event Impact Tool", className="header-title"
                 ),
                 html.P(
                     children=""
@@ -146,14 +322,32 @@ event_title = html.Div(
                              "",
                     className="header-description",
                 ),
+                scroll
+
+            ],
+            className="header",
+        )
+cpd_title = html.Div(
+            children=[
+                #html.P(children="📊", className="header-emoji"),
+                html.H1(
+                    children="Change Point Detection Tool", className="header-title"
+                ),
+                html.P(
+                    children=""
+                             ""
+                             "",
+                    className="header-description",
+                ),
+                scroll
             ],
             className="header",
         )
 real_time_title = html.Div(
             children=[
-                html.P(children="📊", className="header-emoji"),
+                #html.P(children="📊", className="header-emoji"),
                 html.H1(
-                    children="Real-time Data", className="header-title"
+                    children="Daily Data", className="header-title"
                 ),
                 html.P(
                     children=""
@@ -161,19 +355,26 @@ real_time_title = html.Div(
                              "",
                     className="header-description",
                 ),
+                scroll
             ],
             className="header",
         )
 event_graphs = html.Div(
             children=[
+                    html.Div("Event Impact Tool", className="subheading2"),
                     dbc.Button("Calculate Top 10 Most Impactful Events", id="calculate-btn", n_clicks=0, className="btn"),
-                    html.Div("COVID-19 Cases in NYC"),
-                    dcc.Graph(
+                    dbc.Spinner(children=[html.Div("COVID-19 Cases in NYC", className="subheading2"),
+                                          dcc.Graph(
                         id="events-covid-chart",
                         figure= ev_covid_fig,
-                        config={"displayModeBar": False}
-                    ),
-                    html.Div("LSTM 7 Table"),
+                        config={"displayModeBar": False, "edits": {"legendPosition":False}},
+
+                    ),], color="dark", fullscreen=False),
+
+
+
+                    dbc.Spinner(children=[
+                    html.Div("LSTM 7 Table", className= "table-name"),
                     dash_table.DataTable(
                         style_cell={
                             'whiteSpace': 'normal',
@@ -189,9 +390,8 @@ event_graphs = html.Div(
                         id="covid-event-table",
                         columns=[],
                         data=[]
-                    ),
-                    html.Div("LSTM 14 Table"),
-                    dash_table.DataTable(
+                    ),html.Div("LSTM 14 Table", className= "table-name"),
+                                          dash_table.DataTable(
                         style_cell={
                             'whiteSpace': 'normal',
                             'height': 'auto',
@@ -206,15 +406,17 @@ event_graphs = html.Div(
                         id="covid-event-14table",
                         columns=[],
                         data=[]
-                    ),
+                    ),],color="info", fullscreen=False),
 
-                    html.Div("Subway Entries in NYC"),
-                    dcc.Graph(
+
+                    html.Div("Subway Entries in NYC", className="subheading2"),
+                    dbc.Spinner(children=[dcc.Graph(
                         id="events-subway-chart",
                         figure= ev_subway_fig,
                         config={"displayModeBar": False}
-                    ),
-                    html.Div("LSTM 7 Table"),
+                    ),], color="dark", fullscreen= False, ),
+                    dbc.Spinner(children=[
+                    html.Div("LSTM 7 Table", className="table-name"),
                     dash_table.DataTable(
                         style_cell={
                             'whiteSpace': 'normal',
@@ -231,7 +433,7 @@ event_graphs = html.Div(
                         columns=[],
                         data=[]
                     ),
-                    html.Div("LSTM 14 Table"),
+                    html.Div("LSTM 14 Table", className="table-name"),
                     dash_table.DataTable(
                         style_cell={
                             'whiteSpace': 'normal',
@@ -247,28 +449,36 @@ event_graphs = html.Div(
                         id="subway-event-14table",
                         columns=[],
                         data=[]
-                    ),
+                    ),], color="info", fullscreen=False)
                     #table,
             ],
-            className="card",
+            className="graph-card",
         )
 rt_graphs = html.Div(
     children=[
-        html.Div("COVID-19 Cases in NYC"),
+        html.Div("COVID-19 Cases in NYC", className="subheading2"),
         dcc.Graph(
             id="rt-covid-chart",
             figure=rt_covid_fig,
             config={"displayModeBar": False}
         ),
-        html.Div("Subway Usage in NYC"),
-        dcc.Graph(
+        html.Div("Subway Usage in NYC", className="subheading2"),
+        dbc.Spinner(children =[dcc.Graph(
             id="rt-subway-chart",
             figure=rt_subway_fig,
             config={"displayModeBar": False}
-        ),
+        )], size="lg", color= "dark", type= "border", fullscreen= True)
     ]
 
 )
+team = html.Div(
+        children=[
+            html.H1("Team", className="subheading"),
+            html.P("Amit Hiremath, Ziqian Dong & Roberto Rojas-Cessa", className="descr"),
+        ],
+        className="card",
+    )
+
 
 upload=html.Div(
         children=[
@@ -294,17 +504,21 @@ dcc.Upload(
 html.Div(id='output-data-upload'),
     ]
 )
+
 index_page = html.Div(
     children=[
+        navbar,
         title,
-        html.Div(
-            children=[
-                dcc.Link(dbc.Button('Ranked By Events', className='mp-btn1'), href="/events"),
-                dcc.Link(dbc.Button('Ranked By Change Points', className='mp-btn2'), href="/changepoints"),
-                dcc.Link(dbc.Button('Realtime Data', className='mp-btn1'), href="/real-time-data")
-            ],
-            className='menu3'
-        ),
+        info,
+        #html.Div(
+        #    children=[
+        #        dcc.Link(dbc.Button('Event Impact Tool', className='mp-btn1'), href="/events"),
+        #        dcc.Link(dbc.Button('Change Point Detection', className='mp-btn2'), href="/changepoints"),
+        #        dcc.Link(dbc.Button('Daily Data', className='mp-btn1'), href="/daily-data")
+        #    ],
+        #    className='menu3'
+        #),
+        team
     ]
     ,
 )
@@ -315,32 +529,53 @@ events_page = html.Div(
         html.Div(
             children=[
                 html.Div(
+                    children="How to use this tool",
+                    className="subheading"
+                ),
+                html.P("This is the tool that we created to help measure the impacts of events on Both COVID-19 and Subway entries in New York City. Check for your event impacts by adding an event below.", className="descr2"),
+            ],
+            className="card",
+        ),
+        html.Div(
+            children=[
+                html.Div(
                     children="Add an Event",
-                    className="menu-title"
+                    className="subheading2"
                 ),
                 dcc.DatePickerSingle(
                     id="calendar-date-picker",
                     min_date_allowed=subway_data.Date.min().date(),
                     max_date_allowed=subway_data.Date.max().date(),
                     initial_visible_month=subway_data.Date.min().date(),
-                    date=date(2020, 3, 3)
+                    date=date(2020, 3, 3),
+                    className = "calendar"
                 ),
             ],
-            className="menu",
+            className="card2",
         ),
-        upload,
+        #upload,
         event_graphs
     ]
 )
 change_points_page = html.Div(
     children=[
         navbar,
-        title,
+        cpd_title,
+        html.Div(
+            children=[ html.Div("How to use this tool", className="subheading"),
+                       html.Div("This tool was made to help our users visualize how change point detection works. We want oue users to understand where change points are detected.", className="descr2"),
+                       html.Div("You may change the number of change being detected with the drop down menu to get a better understanding of how many when change points were detected.", className="descr2")
+
+
+            ],
+            className="card",
+        ),
+
         html.Div(
             children=[
                 html.Div(
                     children=[
-                        html.Div(children="Number of change points for COVID-19", className="menu-title"),
+                        html.Div(children="Number of change points for COVID-19", className="subheading2"),
                         dcc.Dropdown(
                             id="change-point-filter",
                             options=[
@@ -351,28 +586,31 @@ change_points_page = html.Div(
                             clearable=False,
                             className="dropdown",
                         ),
+
+                        html.Div(
+                            children=[
+                                html.Div(
+                                    dbc.Spinner(children=[html.Div(children="COVID-19 Cases in NYC", className="subheading2"),dcc.Graph(
+                                        id="covid-chart",
+                                        config={"displayModeBar": False},
+                                    ), ], color="dark", fullscreen=False),
+
+                                    className="graph-card",
+                                ),
+                            ],
+                        ),
                     ]
                 ),
             ],
-            className="menu",
+            className="card2",
         ),
+
 
         html.Div(
             children=[
                 html.Div(
-                    children=dcc.Graph(
-                        id="covid-chart",
-                        config={"displayModeBar": False},
-                    ),
-                    className="card",
-                ),
-            ],
-        ),
-        html.Div(
-            children=[
-                html.Div(
                     children=[
-                        html.Div(children="Number of Change Points for Subway Usage", className="menu-title"),
+                        html.Div(children="Number of Change Points for Subway Usage", className="subheading2"),
                         dcc.Dropdown(
                             id="subway-change-point-filter",
                             options=[
@@ -383,22 +621,24 @@ change_points_page = html.Div(
                             clearable=False,
                             className="dropdown",
                         ),
+                        html.Div(
+                            children=[
+                                html.Div(
+                                    dbc.Spinner(children=[html.Div(children="Subway Entries in NYC", className="subheading2"),dcc.Graph(
+                                        id="subway-chart",
+                                        config={"displayModeBar": False},
+                                    )], color="dark", fullscreen=False),
+
+                                    className="graph-card",
+                                ),
+                            ],
+                        ),
                     ]
                 ),
             ],
-            className="menu2",
+            className="card2",
         ),
-        html.Div(
-            children=[
-                html.Div(
-                    children=dcc.Graph(
-                        id="subway-chart",
-                        config={"displayModeBar": False},
-                    ),
-                    className="card",
-                ),
-            ],
-        ),
+
 
 
     ]
@@ -411,21 +651,60 @@ real_time_data = html.Div(
             children=[
                 html.Div(
                     children="Add an Event",
-                    className="menu-title"
+                    className="subheading"
                 ),
                 dcc.DatePickerSingle(
                     id="calendar-date-picker-rt",
                     min_date_allowed=subway_data.Date.min().date(),
                     max_date_allowed=subway_data.Date.max().date(),
                     initial_visible_month=subway_data.Date.min().date(),
-                    date=date(2020, 3, 3)
+                    date=date(2020, 3, 3),
+                    className="calendar"
                 ),
             ],
-            className="menu",
+            className="card",
         ),
         rt_graphs
     ]
 )
+
+teams = html.Div(children=[
+    navbar,
+    team_title,
+    html.Div(className="card",
+             children=[
+                 html.Div("Amit Hiremath", className="subheading"),
+                 html.P("Research Assistant at NYIT",className="descr")
+
+             ]),
+    html.Div(className="card",
+             children=[
+                 html.Div("Dr. Ziqian Dong", className="subheading"),
+                 html.P("Professor at NYIT", className="descr")
+
+             ]),
+    html.Div(className="card",
+             children=[
+                 html.Div("Dr. Roberto Cessa-Rojas", className="subheading"),
+                 html.P("Professor at NJIT", className="descr")
+
+             ]),
+    '''html.Figure(className="image-block",
+                children=[
+                    html.H1("Testing 123", className=""),
+                    html.Img(src="https://images.pexels.com/photos/1680140/pexels-photo-1680140.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=750&w=1260", alt=""),
+                    html.Figcaption(className="figcaption",
+                    children=[
+                        html.H3(),
+                        html.P("rand thing in here"),
+                        html.Button("more info")
+
+                    ])
+                ])'''
+    ]
+)
+
+
 
 # events-page callbacks
 @app.callback(
@@ -484,6 +763,7 @@ def on_click_calc(n_clicks, date_val):
         sub_impact = sub_impact.tail(1)
         sub_y = sub_impact["Abs 7 day Difference"]
         sub_graph.add_trace(go.Bar(x= x_dates, y= sub_y, width= 1000*3600 *24 *2, name="Added Event Impact"))
+
         return cov_graph,sub_graph, [], [], [], [], [], [], [], []
 
     elif what_was_clicked == "calculate-btn" and (n_clicks >0):
@@ -524,6 +804,11 @@ def on_click_calc(n_clicks, date_val):
 
         s_data = subway_cps7[["Date", "Abs 7 day Difference", "Event Description"]].to_dict('records')
         s_data14 = subway_cps14[["Date", "Abs 14 day Difference", "Event Description"]].to_dict('records')
+
+        covid_cps7[["Date", "Abs 7 day Difference", "Event Description"]].to_csv('covidhead.csv')
+        covid_cps14[["Date", "Abs 14 day Difference", "Event Description"]].to_csv('covid14head.csv')
+        subway_cps7[["Date", "Abs 7 day Difference", "Event Description"]].to_csv('subwayhead.csv')
+        subway_cps14[["Date", "Abs 14 day Difference", "Event Description"]].to_csv('subway14head.csv')
 
         return events_covid_chart_figure, events_subway_chart_figure, cols, c_data, sub_cols, s_data, cols14, c_data14, sub_cols14, s_data14
     else:
@@ -578,8 +863,10 @@ def display_page(pathname):
         return events_page
     elif pathname == "/changepoints":
         return change_points_page
-    elif pathname == "/real-time-data":
+    elif pathname == "/daily-data":
         return real_time_data
+    elif pathname =="/team":
+        return teams
     else:
         return index_page
 

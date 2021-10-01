@@ -131,6 +131,20 @@ rt_subway_fig.update_layout(
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets, suppress_callback_exceptions=True)
 server = app.server
 
+app.html_layout = '''<!DOCTYPE html>
+<html>
+    <head>
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-70Y7H08ZHF"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-70Y7H08ZHF');
+</script>
+</head>
+'''
 
 app.layout = html.Div(
     children=[

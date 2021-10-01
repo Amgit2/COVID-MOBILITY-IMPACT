@@ -129,23 +129,42 @@ rt_subway_fig.update_layout(
 
 
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets, suppress_callback_exceptions=True)
-server = app.server
+app.title = "COVID-19 and Subway Usage Event Impact"
+#app.scripts.config.serve_locally = True
+#app.scripts.append_script({
+#    'external_url': 'https://cdn.jsdelivr.net/gh/lppier/lppier.github.io/async_src.js'
+#})
+#app.scripts.append_script(({
+#    'external_url':'https://cdn.jsdelivr.net/gh/lppier/lppier.github.io/gtag.js'
+#}))
 
-app.html_layout = '''<!DOCTYPE html>
+app.index_string = """<!DOCTYPE html>
 <html>
     <head>
-<!-- Global site tag (gtag.js) - Google Analytics -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-70Y7H08ZHF"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-70Y7H08ZHF');
-</script>
-</head>
-'''
-
+            <!-- Global site tag (gtag.js) - Google Analytics -->
+            <script async src="https://www.googletagmanager.com/gtag/js?id=G-70Y7H08ZHF"></script>
+            <script>
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+            
+              gtag('config', 'G-70Y7H08ZHF');
+            </script>
+        {%metas%}
+        <title>{%title%}</title>
+        {%favicon%}
+        {%css%}
+    </head>
+    <body>
+        {%app_entry%}
+        <footer>
+            {%config%}
+            {%scripts%}
+            {%renderer%}
+        </footer>
+    </body>
+</html>"""
+server = app.server
 app.layout = html.Div(
     children=[
         html.Div(

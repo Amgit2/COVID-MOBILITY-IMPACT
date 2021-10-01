@@ -9,34 +9,26 @@ body {
     margin-left: 35%;
     width: 35%;
 }
-.btn{
-    height: 90px;
-    width: 180px;
-    display: flex;
-    justify-content: space-evenly;
-    padding-top: 25px;
-    margin: 10px auto 0 auto;
-    background-color: #60DCCD;
+.btn {
+    transition: all .5s ease;
+    color: #fff;
+    border: 3px solid black;
+    text-align: center;
+    line-height: 1;
+    font-size: 17px;
+    background-color : #079A82;
+    padding: 10px;
+    outline: none;
+    border-radius: 4px;
+    margin-left: auto;
+    margin-right: auto;
 }
-.mp-btn1{
-    height: 80px;
-    width: 200px;
-    display: flex;
-    justify-content: space-evenly;
-    #padding-top: 50px;
-    margin: 0px auto 0 auto;
-    background-color: #60DCCD;
+.btn:hover {
+    color: #079A82;
+    background-color: #fff;
+    border-color: #079A82;
 }
 
-.mp-btn2{
-    height: 80px;
-    width: 200px;
-    display: flex;
-    justify-content: space-evenly;
-    #padding-top: 50px;
-    margin: 0px auto 0 auto;
-    background-color: #60DCCD;
-}
 .header {
     background-image: url('/../assets/impact_background.jpg');
     background-size: cover;
@@ -71,7 +63,7 @@ body {
     margin: 0 auto;
 }
 .subheading2{
-    color: #079A82;;
+    color: #079A82;
     font-size: 32px;
     font-weight: bold;
     text-align: center;

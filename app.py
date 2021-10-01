@@ -45,23 +45,25 @@ ds = jhu_df["Date"]
 nds = []
 for d in ds:
     d = d.replace(',', '')
-    d = datetime.datetime.strptime(d, '%b %d %Y').strftime('%Y-%m-%d')
+    #d = datetime.datetime.strptime(d, '%b %d %Y').strftime('%Y-%m-%d')
     nds.append(d)
 jhu_df["Date"] = nds
-jhu_df = jhu_df[["Date", "Event Description"]]
+jhu_df = jhu_df[["Date", "Event Descriptions"]]
 jhu_df["Date"] = pd.to_datetime(jhu_df["Date"])
 jhu_df = jhu_df.loc[jhu_df["Date"] < "2021-03-01"]
 #print(nds)
 #print(jhu_df.loc[(jhu_df["Date"] =="2020-09-03")].sort_values(by="Date"))
 
 # condense all events on the same day to 1 cell
-event_data = jhu_df.groupby('Date')["Event Description"].apply('----> \n'.join).reset_index()
+event_data = jhu_df.groupby('Date')["Event Descriptions"].apply('----> \n'.join).reset_index()
+event_data.to_csv("all_events.csv", index= False)
 
 covid_data = covid_data.merge(event_data, left_on="Date", right_on="Date", how="left")
-covid_data["Event Description"].fillna(method="ffill", inplace=True)
+covid_data["Event Descriptions"].fillna(method="ffill", inplace=True)
 
 subway_data = subway_data.merge(event_data, left_on="Date", right_on="Date", how="left")
-subway_data["Event Description"].fillna(method="ffill", inplace=True)
+subway_data["Event Descriptions"].fillna(method="ffill", inplace=True)
+
 
 
 ev_covid_fig = go.Figure(data=go.Scatter(x=covid_data["Date"], y=covid_data["MA Cases"], mode="lines",
@@ -80,6 +82,8 @@ legend = dict(
 )
 ev_covid_fig.update_layout(
     {'plot_bgcolor': 'rgba(0, 0, 0, 0)', 'paper_bgcolor': 'rgba(0, 0, 0, 0)', })
+
+
 ev_subway_fig = go.Figure(data=go.Scatter(x=subway_data["Date"], y=subway_data["MA Entries"], mode="lines",
                                           name="Moving Average of Subway Entries"))
 ev_subway_fig.add_trace(go.Scatter(x=subway_data["Date"], y=subway_data["7 days Ahead Forecasted Values"], mode="lines",
@@ -95,6 +99,7 @@ ev_subway_fig.update_layout(
 
 ev_subway_fig.update_layout(
     {'plot_bgcolor': 'rgba(0, 0, 0, 0)', 'paper_bgcolor': 'rgba(0, 0, 0, 0)', })
+
 
 rt_covid_df = pd.read_csv('rt_covid.csv')
 
@@ -393,7 +398,7 @@ event_graphs = html.Div(
                         },
                         style_cell_conditional=[
                             {
-                                'if': {'column_id': 'Event Description'},
+                                'if': {'column_id': 'Event Descriptions'},
                                 'textAlign': 'left'
                             }
                         ],
@@ -409,7 +414,7 @@ event_graphs = html.Div(
                         },
                         style_cell_conditional=[
                             {
-                                'if': {'column_id': 'Event Description'},
+                                'if': {'column_id': 'Event Descriptions'},
                                 'textAlign': 'left'
                             }
                         ],
@@ -435,7 +440,7 @@ event_graphs = html.Div(
                         },
                         style_cell_conditional=[
                             {
-                                'if': {'column_id': 'Event Description'},
+                                'if': {'column_id': 'Event Descriptions'},
                                 'textAlign': 'left'
                             }
                         ],
@@ -452,7 +457,7 @@ event_graphs = html.Div(
                         },
                         style_cell_conditional=[
                             {
-                                'if': {'column_id': 'Event Description'},
+                                'if': {'column_id': 'Event Descriptions'},
                                 'textAlign': 'left'
                             }
                         ],
@@ -520,14 +525,6 @@ index_page = html.Div(
         navbar,
         title,
         info,
-        #html.Div(
-        #    children=[
-        #        dcc.Link(dbc.Button('Event Impact Tool', className='mp-btn1'), href="/events"),
-        #        dcc.Link(dbc.Button('Change Point Detection', className='mp-btn2'), href="/changepoints"),
-        #        dcc.Link(dbc.Button('Daily Data', className='mp-btn1'), href="/daily-data")
-        #    ],
-        #    className='menu3'
-        #),
     ]
     ,
 )
@@ -794,10 +791,11 @@ teams = html.Div(children=[
     Output("subway-event-14table", "columns"), Output("subway-event-14table", "data")],
     [
         Input("calculate-btn", "n_clicks"),
+        Input("clear-btn", "n_clicks"),
         Input('calendar-date-picker', "date")
     ],
 )
-def on_click_calc(n_clicks, date_val):
+def on_click_calc(n_clicks, clear, date_val):
     ctx = dash.callback_context
 
     if not ctx.triggered:
@@ -805,23 +803,22 @@ def on_click_calc(n_clicks, date_val):
     else:
         what_was_clicked = ctx.triggered[0]['prop_id'].split('.')[0]
 
-
     no_cps = len(event_data["Date"].unique())
 
     ma_cases = covid_data["MA Cases"].values
     c_algo = rpt.Dynp(model="l2", jump=1).fit(ma_cases)
-    ccps = c_algo.predict(no_cps)
+    ccps = c_algo.predict(160)
     covid_cps = covid_data.loc[covid_data.index.isin(ccps)]
     #covid_cps["Date"] = covid_cps['Date'].dt.strftime('%Y-%m-%d')
-    covid_cps = covid_cps.groupby("Event Description").nth(0).reset_index()
+    covid_cps = covid_cps.groupby("Event Descriptions").nth(0).reset_index()
 
     ma_entries = subway_data["MA Entries"].values
     s_algo = rpt.Dynp(model="l2", jump=1).fit(ma_entries)
-    scps = s_algo.predict(no_cps)
+    scps = s_algo.predict(160)
 
     subway_cps = subway_data.loc[subway_data.index.isin(scps)]
     #subway_cps["Date"] = subway_cps['Date'].dt.strftime('%Y-%m-%d')
-    subway_cps = subway_cps.groupby("Event Description").nth(0).reset_index()
+    subway_cps = subway_cps.groupby("Event Descriptions").nth(0).reset_index()
 
 
     if what_was_clicked == "calendar-date-picker":
@@ -856,9 +853,6 @@ def on_click_calc(n_clicks, date_val):
                                           y=covid_cps7["Abs 7 day Difference"].head(10),
                                           name="Top 10 Event Impacts")
 
-
-
-
         subway_cps7 = subway_cps.sort_values(by=["Abs 7 day Difference"], ascending=False).head(10)
         subway_cps14 = subway_cps.sort_values(by=["Abs 14 day Difference"], ascending=False).head(10)
 
@@ -866,32 +860,40 @@ def on_click_calc(n_clicks, date_val):
 
         events_subway_chart_figure.add_bar(x= subway_cps7["Date"].head(10), y= subway_cps7["Abs 7 day Difference"].head(10),name="Event Impact")
 
-        cols = ["Date", "Abs 7 day Difference", "Event Description"]
+        cols = ["Date", "Abs 7 day Difference", "Event Descriptions"]
         cols = [{"name": i, "id": i} for i in cols]
 
-        cols14 = ["Date", "Abs 14 day Difference", "Event Description"]
+        cols14 = ["Date", "Abs 14 day Difference", "Event Descriptions"]
         cols14 = [{"name": i, "id": i} for i in cols14]
 
-        sub_cols =["Date", "Abs 7 day Difference", "Event Description"]
+        sub_cols =["Date", "Abs 7 day Difference", "Event Descriptions"]
         sub_cols = [{"name": j, "id": j} for j in sub_cols]
 
-        sub_cols14 = ["Date", "Abs 14 day Difference", "Event Description"]
+        sub_cols14 = ["Date", "Abs 14 day Difference", "Event Descriptions"]
         sub_cols14 = [{"name": j, "id": j} for j in sub_cols14]
 
-        c_data = covid_cps7[["Date", "Abs 7 day Difference", "Event Description"]].to_dict('records')
-        c_data14 = covid_cps14[["Date", "Abs 14 day Difference", "Event Description"]].to_dict('records')
+        c_data = covid_cps7[["Date", "Abs 7 day Difference", "Event Descriptions"]].to_dict('records')
+        c_data14 = covid_cps14[["Date", "Abs 14 day Difference", "Event Descriptions"]].to_dict('records')
 
-        s_data = subway_cps7[["Date", "Abs 7 day Difference", "Event Description"]].to_dict('records')
-        s_data14 = subway_cps14[["Date", "Abs 14 day Difference", "Event Description"]].to_dict('records')
+        s_data = subway_cps7[["Date", "Abs 7 day Difference", "Event Descriptions"]].to_dict('records')
+        s_data14 = subway_cps14[["Date", "Abs 14 day Difference", "Event Descriptions"]].to_dict('records')
 
-        covid_cps7[["Date", "Abs 7 day Difference", "Event Description"]].to_csv('covidhead.csv')
-        covid_cps14[["Date", "Abs 14 day Difference", "Event Description"]].to_csv('covid14head.csv')
-        subway_cps7[["Date", "Abs 7 day Difference", "Event Description"]].to_csv('subwayhead.csv')
-        subway_cps14[["Date", "Abs 14 day Difference", "Event Description"]].to_csv('subway14head.csv')
+        covid_cps7[["Date", "Abs 7 day Difference", "Event Descriptions"]].to_csv('covidhead.csv')
+        covid_cps14[["Date", "Abs 14 day Difference", "Event Descriptions"]].to_csv('covid14head.csv')
+        subway_cps7[["Date", "Abs 7 day Difference", "Event Descriptions"]].to_csv('subwayhead.csv')
+        subway_cps14[["Date", "Abs 14 day Difference", "Event Descriptions"]].to_csv('subway14head.csv')
+
 
         return events_covid_chart_figure, events_subway_chart_figure, cols, c_data, sub_cols, s_data, cols14, c_data14, sub_cols14, s_data14
+    elif what_was_clicked == "clear-btn" and (clear > 0):
+        clear_covid_fig = ev_covid_fig
+        clear_subway_fig = ev_subway_fig
+        clear_covid_fig.data = ev_covid_fig.data[0:2]
+        clear_subway_fig.data = ev_subway_fig.data[0:2]
+
+        return clear_covid_fig, clear_subway_fig, [], [], [], [], [], [], [], []
     else:
-        return ev_covid_fig, ev_subway_fig, [], [], [], [], [], [], [], []
+        raise dash.exceptions.PreventUpdate
     print(what_was_clicked)
     print(date_val)
 

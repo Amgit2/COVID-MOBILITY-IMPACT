@@ -891,7 +891,7 @@ def on_click_calc(n_clicks, clear, date_val):
 
         events_subway_chart_figure = ev_subway_fig
 
-        events_subway_chart_figure.add_bar(x= subway_cps7["Date"].head(10), y= subway_cps7["Abs 7 day Difference"].head(10),name="Event Impact")
+        events_subway_chart_figure.add_bar(x= subway_cps7["Date"].head(10), y= subway_cps7["Abs 7 day Difference"].head(10),name="Top 10 Event Impacts")
 
         cols = ["Date", "Abs 7 day Difference", "Event Descriptions"]
         cols = [{"name": i, "id": i} for i in cols]

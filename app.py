@@ -262,11 +262,6 @@ navbar = dbc.Navbar(
     dark=True,
     fixed="top"
 )'''
-arrows = html.Div(
-                  children=[
-
-                  ],
-            )
 scroll = html.Div(className="scrolldown",
            children=html.Div(className="chevrons",
                   children=[html.Div(className="chevrondown"),
@@ -288,14 +283,14 @@ team_title = html.Div(
             children=[
                 #html.P(children="📊", className="header-emoji"),
                 html.H1(
-                    children="Team", className="header-title"
+                    children="Team", className="non-main-page-title"
                 ),
-                scroll
+                #scroll
 
                 #html.Div(className="chevron", key="str(random.randint(a, b))"),
                 #html.Div(className="chevron", key="str(random.randint(a, b))"),
             ],
-            className="header",
+            className="non-main-page-header",
         )
 tools = html.Div(
     html.Div(
@@ -358,7 +353,7 @@ event_title = html.Div(
             children=[
                 #html.P(children="📊", className="header-emoji"),
                 html.H1(
-                    children="Event Impact Tool", className="header-title"
+                    children="Event Impact Tool", className="non-main-page-title"
                 ),
                 html.P(
                     children=""
@@ -366,16 +361,16 @@ event_title = html.Div(
                              "",
                     className="header-description",
                 ),
-                scroll
+                #scroll
 
             ],
-            className="header",
+            className="non-main-page-header",
         )
 cpd_title = html.Div(
             children=[
                 #html.P(children="📊", className="header-emoji"),
                 html.H1(
-                    children="Change Point Detection Tool", className="header-title"
+                    children="Change Point Detection Tool", className="non-main-page-title"
                 ),
                 html.P(
                     children=""
@@ -383,15 +378,16 @@ cpd_title = html.Div(
                              "",
                     className="header-description",
                 ),
-                scroll
+                #scroll
             ],
-            className="header",
+            className="non-main-page-header",
         )
 real_time_title = html.Div(
             children=[
+
                 #html.P(children="📊", className="header-emoji"),
                 html.H1(
-                    children="Daily Data", className="header-title"
+                    children="Daily Data", className="non-main-page-title"
                 ),
                 html.P(
                     children=""
@@ -399,13 +395,25 @@ real_time_title = html.Div(
                              "",
                     className="header-description",
                 ),
-                scroll
+                #scroll
             ],
-            className="header",
+            className="non-main-page-header",
         )
 event_graphs = html.Div(
             children=[
                     html.Div("Event Impact Tool", className="subheading2"),
+                    html.Div(
+                        children="Add an Event",
+                        className="subheading2"
+                    ),
+                    dcc.DatePickerSingle(
+                        id="calendar-date-picker",
+                        min_date_allowed=subway_data.Date.min().date(),
+                        max_date_allowed=subway_data.Date.max().date(),
+                        initial_visible_month=subway_data.Date.min().date(),
+                        date=date(2020, 3, 3),
+                        className="calendar"
+                    ),
                     html.Div(className="container2",
                              children=[
                                  dbc.Button("Calculate Top 10 Most Impactful Events", id="calculate-btn", n_clicks=0, className="btn"),
@@ -571,26 +579,9 @@ events_page = html.Div(
                     children="How to use this tool",
                     className="subheading"
                 ),
-                html.P("This is the tool that we created to help measure the impacts of events on Both COVID-19 and Subway entries in New York City. Check for your event impacts by adding an event below.", className="descr2"),
+                html.P("This is the tool that we created to help measure the impacts of events on both COVID-19 and Subway entries in New York City. Check for your event impacts by adding an event below.", className="descr2"),
             ],
             className="card",
-        ),
-        html.Div(
-            children=[
-                html.Div(
-                    children="Add an Event",
-                    className="subheading2"
-                ),
-                dcc.DatePickerSingle(
-                    id="calendar-date-picker",
-                    min_date_allowed=subway_data.Date.min().date(),
-                    max_date_allowed=subway_data.Date.max().date(),
-                    initial_visible_month=subway_data.Date.min().date(),
-                    date=date(2020, 3, 3),
-                    className = "calendar"
-                ),
-            ],
-            className="card2",
         ),
         #upload,
         event_graphs
@@ -602,10 +593,8 @@ change_points_page = html.Div(
         cpd_title,
         html.Div(
             children=[ html.Div("How to use this tool", className="subheading"),
-                       html.Div("This tool was made to help our users visualize how change point detection works. We want oue users to understand where change points are detected.", className="descr2"),
-                       html.Div("You may change the number of change being detected with the drop down menu to get a better understanding of how many when change points were detected.", className="descr2")
-
-
+                       html.Div("This tool was made to help our users visualize how change point detection works. We want our users to understand where change points are detected.", className="descr2"),
+                       html.Div("You may change the number of changepoints being detected with the drop down menu to get a better understanding of how and when change points were detected.", className="descr2")
             ],
             className="card",
         ),
@@ -614,7 +603,11 @@ change_points_page = html.Div(
             children=[
                 html.Div(
                     children=[
-                        html.Div(children="Number of change points for COVID-19", className="subheading2"),
+                        html.Div(
+                            children=[
+                                html.Div(children="COVID-19 Cases in NYC", className="subheading2"),
+                                html.Div(
+                                    dbc.Spinner(children=[html.Div(children="Number of change points", className="subheading2"),
                         dcc.Dropdown(
                             id="change-point-filter",
                             options=[
@@ -626,10 +619,7 @@ change_points_page = html.Div(
                             className="dropdown",
                         ),
 
-                        html.Div(
-                            children=[
-                                html.Div(
-                                    dbc.Spinner(children=[html.Div(children="COVID-19 Cases in NYC", className="subheading2"),dcc.Graph(
+                                                          dcc.Graph(
                                         id="covid-chart",
                                         config={"displayModeBar": False},
                                     ), ], color="dark", fullscreen=False),
@@ -649,7 +639,12 @@ change_points_page = html.Div(
             children=[
                 html.Div(
                     children=[
-                        html.Div(children="Number of Change Points for Subway Usage", className="subheading2"),
+
+                        html.Div(
+                            children=[
+                                html.Div(children="Subway Entries in NYC", className="subheading2"),
+                                html.Div(
+                                    dbc.Spinner(children=[html.Div(children="Number of Change Points", className="subheading2"),
                         dcc.Dropdown(
                             id="subway-change-point-filter",
                             options=[
@@ -660,10 +655,7 @@ change_points_page = html.Div(
                             clearable=False,
                             className="dropdown",
                         ),
-                        html.Div(
-                            children=[
-                                html.Div(
-                                    dbc.Spinner(children=[html.Div(children="Subway Entries in NYC", className="subheading2"),dcc.Graph(
+                                    dcc.Graph(
                                         id="subway-chart",
                                         config={"displayModeBar": False},
                                     )], color="dark", fullscreen=False),

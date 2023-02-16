@@ -12,6 +12,7 @@ import datetime
 from datetime import  date
 import uuid
 import random
+
 FA = "https://use.fontawesome.com/releases/v5.12.1/css/all.css"
 external_stylesheets = [
     {
@@ -68,7 +69,7 @@ subway_data["Event Descriptions"].fillna(method="ffill", inplace=True)
 
 ev_covid_fig = go.Figure(data=go.Scatter(x=covid_data["Date"], y=covid_data["MA Cases"], mode="lines",
                                          name="Moving Average of COVID-19 Cases"))
-ev_covid_fig.add_trace(go.Scatter(x=covid_data["Date"], y=covid_data["7 days Ahead Forecasted Values"], mode="lines",
+ev_covid_fig.add_trace(go.Scatter(x=covid_data["Date"], y=covid_data["14 days Ahead Forecasted Values"], mode="lines",
                                   name="LSTM 7 Prediction"))
 
 ev_covid_fig.update_layout(
@@ -86,7 +87,7 @@ ev_covid_fig.update_layout(
 
 ev_subway_fig = go.Figure(data=go.Scatter(x=subway_data["Date"], y=subway_data["MA Entries"], mode="lines",
                                           name="Moving Average of Subway Entries"))
-ev_subway_fig.add_trace(go.Scatter(x=subway_data["Date"], y=subway_data["7 days Ahead Forecasted Values"], mode="lines",
+ev_subway_fig.add_trace(go.Scatter(x=subway_data["Date"], y=subway_data["14 days Ahead Forecasted Values"], mode="lines",
                                    name="LSTM 7 Prediction"))
 ev_subway_fig.update_layout(
     xaxis_tickformat='%B <br>%Y',
@@ -618,8 +619,7 @@ change_points_page = html.Div(
                             clearable=False,
                             className="dropdown",
                         ),
-
-                                                          dcc.Graph(
+                        dcc.Graph(
                                         id="covid-chart",
                                         config={"displayModeBar": False},
                                     ), ], color="dark", fullscreen=False),
@@ -658,7 +658,7 @@ change_points_page = html.Div(
                                     dcc.Graph(
                                         id="subway-chart",
                                         config={"displayModeBar": False},
-                                    )], color="dark", fullscreen=False),
+                                    )], type="dark", fullscreen=False),
 
                                     className="graph-card",
                                 ),
@@ -875,7 +875,7 @@ def on_click_calc(n_clicks, clear, date_val):
         events_covid_chart_figure = ev_covid_fig
 
         events_covid_chart_figure.add_bar(x=covid_cps7["Date"].head(10),
-                                          y=covid_cps7["Abs 7 day Difference"].head(10),
+                                          y=covid_cps7["Abs 14 day Difference"].head(10),
                                           name="Top 10 Event Impacts")
 
         subway_cps7 = subway_cps.sort_values(by=["Abs 7 day Difference"], ascending=False).head(10)
@@ -883,7 +883,9 @@ def on_click_calc(n_clicks, clear, date_val):
 
         events_subway_chart_figure = ev_subway_fig
 
-        events_subway_chart_figure.add_bar(x= subway_cps7["Date"].head(10), y= subway_cps7["Abs 7 day Difference"].head(10),name="Top 10 Event Impacts")
+        events_subway_chart_figure.add_bar(x= subway_cps7["Date"].head(10),
+                                           y= subway_cps7["Abs 14 day Difference"].head(10),
+                                           name="Top 10 Event Impacts")
 
         cols = ["Date", "Abs 7 day Difference", "Event Descriptions"]
         cols = [{"name": i, "id": i} for i in cols]
